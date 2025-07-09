@@ -1,0 +1,69 @@
+ Target Structure After Split
+bash
+Copy
+Edit
+rice_split/
+├── train/
+│   ├── Arborio/
+│   ├── Basmati/
+│   └── ...
+├── val/
+│   ├── Arborio/
+│   ├── Basmati/
+├── test/
+│   ├── Arborio/
+│   ├── Basmati/
+✅ Step-by-Step Python Script to Split Dataset
+python
+Copy
+Edit
+import os
+import shutil
+import random
+from tqdm import tqdm
+
+# Configuration
+SOURCE_DIR = 'rice_dataset'         # Original dataset with class subfolders
+DEST_DIR = 'rice_split'             # Output base folder
+TRAIN_RATIO = 0.7
+VAL_RATIO = 0.15
+TEST_RATIO = 0.15
+SEED = 42
+
+# Create destination directories
+splits = ['train', 'val', 'test']
+for split in splits:
+    for class_name in os.listdir(SOURCE_DIR):
+        class_split_path = os.path.join(DEST_DIR, split, class_name)
+        os.makedirs(class_split_path, exist_ok=True)
+
+# Split images per class
+for class_name in os.listdir(SOURCE_DIR):
+    class_path = os.path.join(SOURCE_DIR, class_name)
+    images = os.listdir(class_path)
+    random.seed(SEED)
+    random.shuffle(images)
+
+    total = len(images)
+    train_end = int(TRAIN_RATIO * total)
+    val_end = train_end + int(VAL_RATIO * total)
+
+    train_files = images[:train_end]
+    val_files = images[train_end:val_end]
+    test_files = images[val_end:]
+
+    for split_name, file_list in zip(splits, [train_files, val_files, test_files]):
+        for file_name in tqdm(file_list, desc=f'{class_name} -> {split_name}'):
+            src = os.path.join(class_path, file_name)
+            dst = os.path.join(DEST_DIR, split_name, class_name, file_name)
+            shutil.copy2(src, dst)
+
+print("✅ Splitting complete: Train, Validation, and Test sets created.")
+📊 Example of Proportions (Per Class)
+If each class has 15,000 images:
+
+train → 10,500 images
+
+val → 2,250 images
+
+test → 2,250 images

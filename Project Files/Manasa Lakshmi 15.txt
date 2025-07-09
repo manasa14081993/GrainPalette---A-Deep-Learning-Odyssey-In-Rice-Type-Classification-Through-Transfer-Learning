@@ -1,0 +1,30 @@
+Saving the Model
+1. Save the entire model (architecture + weights + optimizer state)
+python
+Copy
+Edit
+model.save('grainpalette_model.h5')
+print("Model saved as grainpalette_model.h5")
+This saves the model in HDF5 format (.h5), which is widely supported.
+
+2. Alternatively, save in TensorFlow's SavedModel format (recommended)
+python
+Copy
+Edit
+model.save('grainpalette_saved_model')
+print("Model saved in TensorFlow SavedModel format at 'grainpalette_saved_model/'")
+This creates a folder with the full model — better for deployment and future use.
+
+Loading the Saved Model
+From .h5 file
+python
+Copy
+Edit
+from tensorflow.keras.models import load_model
+
+model = load_model('grainpalette_model.h5')
+From SavedModel folder
+python
+Copy
+Edit
+model = load_model('grainpalette_saved_model')

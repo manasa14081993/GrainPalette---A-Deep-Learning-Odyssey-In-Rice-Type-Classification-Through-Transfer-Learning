@@ -1,0 +1,27 @@
+Training the Model
+python
+Copy
+Edit
+# 1. Import libraries
+import tensorflow as tf
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+
+# 2. Compile the model (adjust if already compiled)
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+    loss='categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+# 3. Define callbacks for better training management
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+model_checkpoint = ModelCheckpoint('best_grainpalette_model.h5', monitor='val_accuracy', save_best_only=True, verbose=1)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=1e-6, verbose=1)
+
+# 4. Train the model
+history = model.fit(
+    train_generator,
+    epochs=30,
+    validation_data=val_generator,
+    callbacks=[early_stopping, model_checkpoint, reduce_lr]
+)

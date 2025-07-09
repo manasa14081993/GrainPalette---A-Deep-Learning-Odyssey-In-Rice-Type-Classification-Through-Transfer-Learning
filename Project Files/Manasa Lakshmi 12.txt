@@ -1,0 +1,67 @@
+1. Prepare the Test Data Generator
+Assuming your test images are organized in subfolders by class (like rice_split/test/), use ImageDataGenerator with no shuffling to keep order:
+
+python
+Copy
+Edit
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+test_generator = test_datagen.flow_from_directory(
+    'rice_split/test',
+    target_size=(224, 224),
+    batch_size=32,
+    class_mode='categorical',
+    shuffle=False
+)
+2. Load Your Trained Model
+If you saved your best model during training:
+
+python
+Copy
+Edit
+from tensorflow.keras.models import load_model
+
+model = load_model('best_grainpalette_model.h5')
+3. Evaluate the Model on Test Set
+python
+Copy
+Edit
+test_loss, test_accuracy = model.evaluate(test_generator)
+print(f"Test Loss: {test_loss:.4f}")
+print(f"Test Accuracy: {test_accuracy:.4f}")
+4. (Optional) Predict Classes and Show a Classification Report
+python
+Copy
+Edit
+import numpy as np
+from sklearn.metrics import classification_report, confusion_matrix
+
+# Predict classes probabilities
+pred_probs = model.predict(test_generator)
+# Convert probabilities to class indices
+pred_classes = np.argmax(pred_probs, axis=1)
+
+# True class indices
+true_classes = test_generator.classes
+
+# Class labels
+class_labels = list(test_generator.class_indices.keys())
+
+# Print classification report
+print(classification_report(true_classes, pred_classes, target_names=class_labels))
+5. (Optional) Confusion Matrix Plot
+python
+Copy
+Edit
+import matplotlib.pyplot as plt
+import seaborn as sns
+cm = confusion_matrix(true_classes, pred_classes)
+
+plt.figure(figsize=(8,6))
+sns.heatmap(cm, annot=True, fmt='d', xticklabels=class_labels, yticklabels=class_labels, cmap='Blues')
+plt.ylabel('Actual')
+plt.xlabel('Predicted')
+plt.title('Confusion Matrix')
+plt.show()

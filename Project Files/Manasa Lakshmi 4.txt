@@ -1,0 +1,58 @@
+ Option 1: Resize During Training Using ImageDataGenerator
+If you're using Keras' ImageDataGenerator, resizing is automatic with target_size:
+
+python
+Copy
+Edit
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+IMG_SIZE = (224, 224)  # Change this size as needed
+BATCH_SIZE = 32
+
+train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
+
+train_generator = train_datagen.flow_from_directory(
+    'rice_split/train',
+    target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    subset='training'
+)
+
+val_generator = train_datagen.flow_from_directory(
+    'rice_split/train',
+    target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    subset='validation'
+)
+✅ Pro: This method resizes images on the fly, saving disk space.
+
+✅ Option 2: Permanently Resize and Save New Images
+Use this if you want to save resized images to a new directory:
+
+python
+Copy
+Edit
+from PIL import Image
+import os
+
+SOURCE_DIR = 'rice_dataset'
+DEST_DIR = 'resized_rice_dataset'
+TARGET_SIZE = (224, 224)
+
+os.makedirs(DEST_DIR, exist_ok=True)
+
+for class_name in os.listdir(SOURCE_DIR):
+    src_class_path = os.path.join(SOURCE_DIR, class_name)
+    dst_class_path = os.path.join(DEST_DIR, class_name)
+    os.makedirs(dst_class_path, exist_ok=True)
+
+    for img_file in tqdm(os.listdir(src_class_path), desc=f'Resizing {class_name}'):
+        try:
+            img_path = os.path.join(src_class_path, img_file)
+            img = Image.open(img_path).convert('RGB')
+            img = img.resize(TARGET_SIZE)
+            img.save(os.path.join(dst_class_path, img_file))
+        except Exception as e:
+            print(f"Error resizing {img_file}: {e}")

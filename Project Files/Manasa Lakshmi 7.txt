@@ -1,0 +1,73 @@
+Option 1: Preview Images Using Keras' ImageDataGenerator
+If you're using Keras’ data pipeline (recommended for GrainPalette), this will show a grid of sample images and their labels.
+
+🔹 Code
+python
+Copy
+Edit
+import matplotlib.pyplot as plt
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+# Path to the training directory (after splitting)
+train_dir = 'rice_split/train'
+
+# Load training images
+IMG_SIZE = (224, 224)
+BATCH_SIZE = 16
+
+datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = datagen.flow_from_directory(
+    train_dir,
+    target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    shuffle=True
+)
+
+# Get a batch
+images, labels = next(train_generator)
+
+# Class labels
+class_names = list(train_generator.class_indices.keys())
+
+# Plot first 9 images
+plt.figure(figsize=(10, 10))
+for i in range(9):
+    plt.subplot(3, 3, i + 1)
+    plt.imshow(images[i])
+    plt.title(f"Class: {class_names[labels[i].argmax()]}")
+    plt.axis('off')
+plt.tight_layout()
+plt.show()
+✅ Option 2: Preview Using os and PIL (Manual)
+This version loads images directly from disk and shows their filenames and classes.
+
+🔹 Code
+python
+Copy
+Edit
+import os
+from PIL import Image
+import matplotlib.pyplot as plt
+
+# Set path to a split (train/val/test)
+preview_dir = 'rice_split/train'
+class_names = os.listdir(preview_dir)
+
+# Show 1 image from each class
+plt.figure(figsize=(12, 6))
+for i, class_name in enumerate(class_names[:5]):
+    class_path = os.path.join(preview_dir, class_name)
+    img_name = os.listdir(class_path)[0]  # first image
+    img_path = os.path.join(class_path, img_name)
+
+    img = Image.open(img_path)
+
+    plt.subplot(1, 5, i + 1)
+    plt.imshow(img)
+    plt.title(class_name)
+    plt.axis('off')
+
+plt.tight_layout()
+plt.show()

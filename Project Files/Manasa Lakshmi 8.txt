@@ -1,0 +1,97 @@
+To use a pre-trained CNN model as a feature extractor in the GrainPalette project, we can leverage models like MobileNetV2, ResNet50, or EfficientNetB0 from Keras Applications. Below is a complete example using MobileNetV2, where we:
+
+Load the model without the top layer
+
+Freeze its weights
+
+Add custom classification layers on top
+
+Train only the top layers (not the base)
+
+✅ 1. Import Required Libraries
+python
+Copy
+Edit
+import tensorflow as tf
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras import layers, models
+✅ 2. Load MobileNetV2 as a Frozen Feature Extractor
+python
+Copy
+Edit
+IMG_SHAPE = (224, 224, 3)
+
+# Load the pre-trained model without the classification head
+base_model = MobileNetV2(input_shape=IMG_SHAPE,
+                         include_top=False,
+                         weights='imagenet')
+
+# Freeze the base model (so its weights are not updated during training)
+base_model.trainable = False
+✅ 3. Add Custom Top Layers
+python
+Copy
+Edit
+model = models.Sequential([
+    base_model,
+    layers.GlobalAveragePooling2D(),
+    layers.Dropout(0.3),
+    layers.Dense(5, activation='softmax')  # 5 classes: Arborio, Basmati, Ipsala, Jasmine, Karacadag
+])
+✅ 4. Compile the Model
+python
+Copy
+Edit
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+✅ 5. Summary
+python
+Copy
+Edit
+model.summary()
+✅ 6. Train the Model with flow_from_directory Generators
+python
+Copy
+Edit
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
+
+train_generator = train_datagen.flow_from_directory(
+    'rice_split/train',
+    target_size=(224, 224),
+    batch_size=32,
+    class_mode='categorical',
+    subset='training'
+)
+
+val_generator = train_datagen.flow_from_directory(
+    'rice_split/train',
+    target_size=(224, 224),
+    batch_size=32,
+    class_mode='categorical',
+    subset='validation'
+)
+
+# Train
+history = model.fit(train_generator, epochs=5, validation_data=val_generator)
+✅ 7. Fine-Tuning (Optional)
+After initial training, you can unfreeze some layers of base_model for fine-tuning:
+
+python
+Copy
+Edit
+base_model.trainable = True
+
+# Freeze all layers except the last 20
+for layer in base_model.layers[:-20]:
+    layer.trainable = False
+
+# Recompile with a low learning rate
+model.compile(optimizer=tf.keras.optimizers.Adam(1e-5),
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Fine-tune
+fine_tune_history = model.fit(train_generator, epochs=5, validation_data=val_generator)

@@ -1,0 +1,56 @@
+1. Import Required Modules
+python
+Copy
+Edit
+import tensorflow as tf
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+2. Compile the Model
+Assuming you already have your model built (e.g., using MobileNetV2 as feature extractor):
+
+python
+Copy
+Edit
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),  # You can tune the LR
+    loss='categorical_crossentropy',                          # For multi-class classification
+    metrics=['accuracy']
+)
+3. Set Up Callbacks (Optional but Recommended)
+python
+Copy
+Edit
+# Stop training early if validation loss doesn't improve after 5 epochs
+early_stopping = EarlyStopping(
+    monitor='val_loss',
+    patience=5,
+    restore_best_weights=True
+)
+
+# Save the best model based on validation accuracy
+model_checkpoint = ModelCheckpoint(
+    'best_grainpalette_model.h5',
+    monitor='val_accuracy',
+    save_best_only=True,
+    verbose=1
+)
+
+# Reduce learning rate if validation loss plateaus
+reduce_lr = ReduceLROnPlateau(
+    monitor='val_loss',
+    factor=0.5,
+    patience=3,
+    min_lr=1e-6,
+    verbose=1
+)
+4. Train the Model
+Assuming you have train_generator and val_generator ready from ImageDataGenerator.flow_from_directory():
+
+python
+Copy
+Edit
+history = model.fit(
+    train_generator,
+    epochs=30,
+    validation_data=val_generator,
+    callbacks=[early_stopping, model_checkpoint, reduce_lr]
+)

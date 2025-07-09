@@ -1,0 +1,59 @@
+1. Prepare the Test Data Generator
+python
+Copy
+Edit
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+test_generator = test_datagen.flow_from_directory(
+    'rice_split/test',             # Path to your test dataset folder
+    target_size=(224, 224),        # Same size as training images
+    batch_size=32,
+    class_mode='categorical',
+    shuffle=False                  # Important: don't shuffle for evaluation
+)
+2. Load Your Trained Model
+python
+Copy
+Edit
+from tensorflow.keras.models import load_model
+
+model = load_model('best_grainpalette_model.h5')  # Load your saved model
+3. Evaluate the Model on Test Data
+python
+Copy
+Edit
+test_loss, test_acc = model.evaluate(test_generator)
+print(f"Test Loss: {test_loss:.4f}")
+print(f"Test Accuracy: {test_acc:.4f}")
+4. (Optional) Detailed Classification Report & Confusion Matrix
+python
+Copy
+Edit
+import numpy as np
+from sklearn.metrics import classification_report, confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Predict probabilities for the test set
+pred_probs = model.predict(test_generator)
+pred_classes = np.argmax(pred_probs, axis=1)
+
+# True labels
+true_classes = test_generator.classes
+
+# Class names
+class_labels = list(test_generator.class_indices.keys())
+
+# Classification report
+print(classification_report(true_classes, pred_classes, target_names=class_labels))
+
+# Confusion matrix plot
+cm = confusion_matrix(true_classes, pred_classes)
+plt.figure(figsize=(8,6))
+sns.heatmap(cm, annot=True, fmt='d', xticklabels=class_labels, yticklabels=class_labels, cmap='Blues')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()

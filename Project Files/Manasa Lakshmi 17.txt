@@ -1,0 +1,69 @@
+To run the GrainPalette application end-to-end—meaning loading the model, taking input images, and predicting the rice type—you’ll want a simple Python script or a small app interface.
+
+Here’s a basic command-line Python script that:
+
+Loads your trained model
+
+Loads and preprocesses an input image
+
+Runs prediction
+
+Prints the predicted rice class
+
+Step-by-step: Run the application with code
+python
+Copy
+Edit
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
+import numpy as np
+
+# 1. Load the trained model
+model = load_model('grainpalette_best_model.h5')
+
+# 2. Define class labels (must match training)
+class_labels = ['Basmati', 'Jasmine', 'Arborio', 'Calrose', 'Long Grain']  # example labels
+
+# 3. Preprocessing function
+def preprocess_image(img_path, target_size=(224, 224)):
+    img = image.load_img(img_path, target_size=target_size)
+    img_array = image.img_to_array(img)
+    img_array = img_array / 255.0                 # rescale like during training
+    img_array = np.expand_dims(img_array, axis=0) # add batch dimension
+    return img_array
+
+# 4. Predict rice type
+def predict_rice_type(img_path):
+    processed_img = preprocess_image(img_path)
+    preds = model.predict(processed_img)
+    class_idx = np.argmax(preds, axis=1)[0]
+    confidence = preds[0][class_idx]
+    predicted_label = class_labels[class_idx]
+    print(f"Predicted Rice Type: {predicted_label} (Confidence: {confidence:.2f})")
+
+# 5. Run prediction on an image
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) != 2:
+        print("Usage: python run_grainpalette.py <path_to_rice_image>")
+    else:
+        img_path = sys.argv[1]
+        predict_rice_type(img_path)
+How to use this script:
+Save it as run_grainpalette.py
+
+Open terminal / command prompt
+
+Run:
+
+bash
+Copy
+Edit
+python run_grainpalette.py path/to/your/rice_image.jpg
+You’ll see output like:
+
+less
+Copy
+Edit
+Predicted Rice Type: Jasmine (Confidence: 0.87)

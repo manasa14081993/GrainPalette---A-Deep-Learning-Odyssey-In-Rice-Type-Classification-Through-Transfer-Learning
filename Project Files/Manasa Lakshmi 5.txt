@@ -1,0 +1,88 @@
+Folder-Based Labeling (Recommended by Keras)
+If your image dataset is structured like this:
+
+Copy
+Edit
+rice_dataset/
+├── Arborio/
+│   ├── img1.jpg
+│   ├── img2.jpg
+│   └── ...
+├── Basmati/
+├── Ipsala/
+├── Jasmine/
+└── Karacadag/
+Then using Keras' flow_from_directory() automatically links the class labels using the folder names. Here's how you do it:
+
+🧠 Step-by-Step Code: Linking Images to Class Labels
+🔹 1. Define Dataset Path and Image Size
+python
+Copy
+Edit
+import os
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+IMG_SIZE = (224, 224)
+BATCH_SIZE = 32
+DATASET_DIR = 'rice_dataset'  # Make sure this is your dataset folder path
+🔹 2. Use ImageDataGenerator to Auto-Link Labels
+python
+Copy
+Edit
+datagen = ImageDataGenerator(rescale=1./255, validation_split=0.2)
+
+train_generator = datagen.flow_from_directory(
+    DATASET_DIR,
+    target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    subset='training',
+    shuffle=True
+)
+
+val_generator = datagen.flow_from_directory(
+    DATASET_DIR,
+    target_size=IMG_SIZE,
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    subset='validation',
+    shuffle=False
+)
+🔍 Checking Class Mappings
+You can print how image labels are assigned:
+
+python
+Copy
+Edit
+print(train_generator.class_indices)
+Output might be:
+
+python
+Copy
+Edit
+{'Arborio': 0, 'Basmati': 1, 'Ipsala': 2, 'Jasmine': 3, 'Karacadag': 4}
+This shows Keras has successfully linked each folder to a class label, and images inside those folders inherit the correct class.
+
+📦 Optional: Load Image + Class Data Manually (Using Python)
+python
+Copy
+Edit
+image_paths = []
+labels = []
+
+class_names = os.listdir(DATASET_DIR)
+class_names.sort()
+
+for idx, class_name in enumerate(class_names):
+    class_folder = os.path.join(DATASET_DIR, class_name)
+    for image_file in os.listdir(class_folder):
+        image_paths.append(os.path.join(class_folder, image_file))
+        labels.append(idx)  # or use class_name if needed
+You can now use image_paths and labels to create custom datasets (e.g., for PyTorch or tf.data).
+
+✅ Summary
+Task	Tool	Code
+Link images to class labels	flow_from_directory()	✔️
+Load paths and labels manually	os.listdir, for loop	✔️
+Verify mappings	print(train_generator.class_indices)	✔️
+

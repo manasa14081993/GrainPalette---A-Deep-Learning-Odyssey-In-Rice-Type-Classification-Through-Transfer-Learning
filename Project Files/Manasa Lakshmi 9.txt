@@ -1,0 +1,43 @@
+1. Import Modules
+python
+Copy
+Edit
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow.keras.applications import MobileNetV2
+🧠 2. Build Model with Custom Dense Layers
+python
+Copy
+Edit
+# Base model (frozen)
+base_model = MobileNetV2(input_shape=(224, 224, 3),
+                         include_top=False,
+                         weights='imagenet')
+base_model.trainable = False
+
+# Add dense layers on top
+model = models.Sequential([
+    base_model,
+    layers.GlobalAveragePooling2D(),
+
+    # Add custom dense layers
+    layers.Dense(128, activation='relu'),         # First Dense layer
+    layers.Dropout(0.3),                          # Dropout for regularization
+
+    layers.Dense(64, activation='relu'),          # Optional: second Dense layer
+    layers.Dropout(0.3),
+
+    layers.Dense(5, activation='softmax')         # Final layer for 5 rice classes
+])
+🧪 3. Compile Model
+python
+Copy
+Edit
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+📋 4. Model Summary
+python
+Copy
+Edit
+model.summary()
